@@ -2,22 +2,43 @@
 title: "R Notebook"
 output: html_notebook
 ---
+```{r}
+library(factoextra)
+library("ggplot2")
+library("ggdendro")
+suppressPackageStartupMessages(library(dendextend))
+suppressPackageStartupMessages(library(dplyr))
+```
+
 
 ```{r}
+set.seed(123)
 data = read.csv("/home/miguel/Documents/Git/EAD/whi-2019.csv")
 ```
+
+```{r}
+str(data)
+summary(data)
+```
+
 
 ```{r}
 data_work = data[-c(1,2)]
 ```
 
-```{r}
+```{r fig.height = 20, fig.width = 20}
 pairs(data_work)
 ```
 
 ```{r}
 scaled.data <- scale(data_work)
+rownames(scaled.data) <- data$Country.or.region
 ```
+
+```{r}
+summary(scaled.data)
+```
+
 
 ```{r}
 fviz_nbclust(scaled.data, FUNcluster = kmeans, method = c("wss"))
@@ -25,7 +46,6 @@ fviz_nbclust(scaled.data, FUNcluster = kmeans, method = c("wss"))
 
 
 ```{r}
-set.seed(123)
 km.res <- kmeans(scaled.data, 3, iter.max = 10, nstart = 50)
 print(km.res)
 ```
@@ -56,5 +76,46 @@ head(df)
 ```{r fig.height = 15, fig.width = 15}
 
 fviz_cluster(km.res, data = df, labelsize = 12, show.clust.cent = FALSE, repel = TRUE)
+```
+Hierarchical Clustering
+
+
+```{r}
+dist_mat <- dist(scaled.data, method = 'euclidean')
+```
+```{r fig.height = 10, fig.width = 30}
+hclust_avg <- hclust(dist_mat, method = 'ward')
+ggdendrogram(hclust_avg, theme_dendro = TRUE )
+```
+
+```{r fig.height = 10, fig.width = 30}
+avg_dend_obj <- as.dendrogram(hclust_avg)
+avg_col_dend <- color_branches(avg_dend_obj, k = 3)
+plot(avg_col_dend)
+
+```
+
+```{r}
+cut_avg <- cutree(hclust_avg, k = 3)
+```
+
+
+```{r}
+hc <- mutate(data, cluster = cut_avg)
+count(hc, cluster)
+```
+
+```{r}
+ggplot(hc, aes(x=GDP.per.capita, y = Score, color = factor(cluster))) + geom_point()
+```
+
+```{r}
+hc.res <- hcut(scaled.data, k = 3, hc_method = "ward.D", hc_metric = "euclidean")
+df_3 <- cbind(scaled.data, cluster = hc.res$cluster)
+rownames(df_3) <- data$Country.or.region
+```
+
+```{r fig.height = 15, fig.width = 15}
+fviz_cluster(hc.res, data = df, labelsize = 12, show.clust.cent = FALSE, repel = TRUE)
 ```
 
