@@ -8,6 +8,7 @@ library("ggplot2")
 library("ggdendro")
 suppressPackageStartupMessages(library(dendextend))
 suppressPackageStartupMessages(library(dplyr))
+library("clusteval")
 ```
 
 
@@ -43,6 +44,11 @@ summary(scaled.data)
 ```{r}
 fviz_nbclust(scaled.data, FUNcluster = kmeans, method = c("wss"))
 ```
+
+```{r}
+fviz_nbclust(scaled.data, FUNcluster=hcut, method = c("wss"))
+```
+
 
 
 ```{r}
@@ -139,3 +145,12 @@ rownames(df_5) <- data$Country.or.region
 ```{r fig.height = 15, fig.width = 15}
 fviz_cluster(hc_3.res, data = df5, labelsize = 12, show.clust.cent = FALSE, repel = TRUE)
 ```
+
+```{r}
+cluster_similarity(km.res$cluster, hc.res$cluster, similarity = c("jaccard"), method = "independence")
+```
+
+```{r}
+cluster_similarity(km.res$cluster, hc.res$cluster, similarity = c("rand"), method = "independence")
+```
+
