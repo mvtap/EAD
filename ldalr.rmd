@@ -1,0 +1,84 @@
+---
+title: "LDA and MLR"
+output: html_notebook
+---
+
+```{r}
+library(readxl)
+comp_data <- read_excel("comp_data.xlsx")
+dim(comp_data)
+```
+Using only the 2 PCA components and the Continent (index, column 1 is not used) 
+```{r}
+
+comp_data1 = comp_data[,c(2,3,4)]
+
+```
+
+
+```{r}
+comp_data1[1] <- scale(comp_data1[1])
+comp_data1[2] <-scale(comp_data1[2])
+set.seed(123)
+library(caret)
+train.index <- createDataPartition(comp_data1$continente, p = 0.6, list= FALSE)
+training_set <- comp_data1[train.index,]
+test_set  <- comp_data1 [-train.index,]
+
+#split = sample.split(comp_data1$continente, SplitRatio = 0.8)
+#training_set = subset(comp_data1, split == TRUE)
+#test_set = subset(comp_data1, split == FALSE)
+```
+```{r}
+lda.model = lda (continente~., data = training_set)
+```
+
+
+```{r}
+lda.model
+```
+```{r}
+predmodel.train.lda = predict(lda.model, data=training_set)
+table(Predicted=predmodel.train.lda$class, training_set$continente)
+confusionMatrix( predmodel.train.lda$class, as.factor(training_set$continente))
+```
+```{r}
+predmodel.test.lda = predict(lda.model, newdata=test_set)
+d=table(Predicted=predmodel.test.lda$class, test_set$continente)
+d
+library('caret')
+sum(diag(d))/sum(d)
+confusionMatrix( predmodel.test.lda$class, as.factor(test_set$continente))
+#confusionMatrix(as.factor(training_set$continente), predmodel.train.lda$class)
+```
+```{r}
+qda.model = qda (continente~., data = training_set)
+```
+```{r}
+
+model <- nnet::multinom(continente ~., data = training_set)
+summary(model)
+
+predicted <- predict(model, data = training_set)
+
+confusionMatrix( predicted, as.factor(training_set$continente))
+
+predicted_test <- predict(model, newdata = test_set)
+#d=table(Predicted=predicted_test, test_set$continente)
+#d
+#confusionMatrix( predicted_test, as.factor(test_set$continente))
+confusionMatrix( predicted_test, as.factor(test_set$continente))
+
+#d=table(Predicted=predicted.classes$class, test_set$continente)
+
+#sum(diag(d))/sum(d)
+```
+```{r}
+test_
+```
+
+
+```{r}
+sum(diag(d))/sum(d)
+```
+
